@@ -38,8 +38,8 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 # >>>>>安装 Bun
 # bun install -g 将会安装到 这个路径
 RUN mkdir -p /home/usr_vscode/.bun/bin
-ENV BUN_INSTALL_BIN="/home/usr_vscode/.bun/bin"
-ENV PATH="${BUN_INSTALL_BIN}:${PATH}"
+ENV BUN_INSTALL_BIN "/home/usr_vscode/.bun/bin"
+ENV PATH "${BUN_INSTALL_BIN}:${PATH}"
 # https://github.com/oven-sh/bun/blob/277fc558e2039e3ab25ecebecc5a3f04c5c3199a/dockerhub/debian-slim/Dockerfile
 COPY --chown=usr_vscode:usr_vscode --from=oven/bun:1-debian /usr/local/bin/bun /usr/local/bin
 
