@@ -46,11 +46,12 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "chat.extensionUnification.enabled": true,
         "chat.tools.terminal.autoApprove": {
-          "/.*/": true
+          "/.*/": true,
+          "git push": false
         },
         // * 尽管使用了“/.*/”，但有些还是会失败，因为有几个错误的默认值：
         // * https://github.com/microsoft/vscode/issues/266651#issuecomment-3292581459
-        "chat.tools.terminal.ignoreDefaultAutoApproveRules": false,
+        "chat.tools.terminal.ignoreDefaultAutoApproveRules": true,
         "tasks": {
           "version": "2.0.0",
           "tasks": [
@@ -58,31 +59,15 @@
               "type": "npm",
               "script": "dev",
               "label": "🚀 Dev: Run on Folder Open",
-              "detail": "启动开发服务器",
               "runOptions": {
                 "runOn": "folderOpen"
               },
-              "problemMatcher": [],
               "isBackground": true,
               "presentation": {
-                "reveal": "always",
                 "panel": "dedicated"
-              },
-              "group": {
-                "kind": "build",
-                "isDefault": false
               }
             }
           ]
-        },
-        "terminal.integrated.defaultProfile.linux": "💲zsh",
-        "terminal.integrated.profiles.linux": {
-          "💲zsh": {
-            "path": "zsh",
-            "icon": "terminal-cmd",
-            "overrideName": true,
-            "color": "terminal.ansiGreen"
-          }
         },
         // https://stackoverflow.com/questions/75708866/vscode-dev-container-fails-to-load-ms-vscode-js-debug-extension-correctly
         // https://davidwesst.com/blog/missing-bootloader-in-vscode-devcontainer/
@@ -95,6 +80,15 @@
          * 将其设置为 "disabled" 以规避该问题。
          */
         // "debug.javascript.autoAttachFilter": "disabled",
+        "terminal.integrated.defaultProfile.linux": "💲zsh",
+        "terminal.integrated.profiles.linux": {
+          "💲zsh": {
+            "path": "zsh",
+            "icon": "terminal-cmd",
+            "overrideName": true,
+            "color": "terminal.ansiGreen"
+          }
+        },
         "json.schemas": [
           {
             "fileMatch": [
@@ -107,6 +101,11 @@
     }
   },
   "mounts": [
+    { // 不挂载可能会遇到：`Cannot run macOS (Mach-O) executable in Docker: Exec format error`
+      "type": "volume",
+      "source": "${localWorkspaceFolderBasename}-node_modules",
+      "target": "${containerWorkspaceFolder}/node_modules"
+    },
     {
       "type": "volume",
       "source": "${localWorkspaceFolderBasename}-pnpm-store",

@@ -6,11 +6,25 @@ which bunx
 bun --version
 
 sudo chown -R usr_vscode:usr_vscode /home/usr_vscode/.bun
+sudo chown -R usr_vscode node_modules
 echo "" >> ~/.zshrc
 echo "# >>>>> onCreateCommand.sh START" >> ~/.zshrc
 
 echo "alias clean-node-modules='setopt rm_star_silent; rm -rf node_modules/.*; rm -rf node_modules/*'; unsetopt rm_star_silent" >> ~/.zshrc
-echo '# [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"' >> ~/.zshrc
+cat <<'EOF' >> ~/.zshrc
+if [[ "$TERM_PROGRAM" == "vscode" ]]; then
+    local vscode_executable
+    if command -v code >/dev/null 2>&1; then
+        vscode_executable="code"
+    elif command -v code-insiders >/dev/null 2>&1; then
+        vscode_executable="code-insiders"
+    fi
+
+    if [ -n "$vscode_executable" ]; then
+        . "$($vscode_executable --locate-shell-integration-path zsh)"
+    fi
+fi
+EOF
 
 if command -v bun >/dev/null 2>&1; then
     # bun completions
@@ -32,6 +46,9 @@ bun add -g pnpm@latest
 # echo "alias pnpx='bunx -g pnpx'" >> ~/.zshrc
 /home/usr_vscode/.bun/bin/pnpm config set store-dir ~/.pnpm-store
 sudo chown -R usr_vscode:usr_vscode ~/.pnpm-store
+
+# >>>>> npm
+bun add -g npm@latest
 
 # >>>>> Claude Code
 bun add -g @anthropic-ai/claude-code@latest
