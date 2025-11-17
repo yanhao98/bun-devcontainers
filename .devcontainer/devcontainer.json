@@ -1,9 +1,9 @@
 {
-  "image": "ghcr.io/yanhao98/bun-devcontainers:main",
-  // "build": {
-  //   "dockerfile": "Dockerfile.base",
-  //   "args": {}
-  // },
+  // "image": "ghcr.io/yanhao98/bun-devcontainers:main",
+  "build": {
+    "dockerfile": "Dockerfile.base",
+    "args": {}
+  },
   "features": {},
   "runArgs": [
     // "--cap-add=NET_ADMIN",
@@ -119,8 +119,8 @@
     },
     {
       "type": "bind",
-      "source": "${localWorkspaceFolder}/.devcontainer/onCreateCommand.sh",
-      "target": "/usr/local/bin/onCreateCommand.sh"
+      "source": "${localWorkspaceFolder}/.devcontainer/onCreateCommand.d",
+      "target": "/usr/local/etc/onCreateCommand.d"
     }
   ],
   /**
