@@ -24,9 +24,11 @@
     "ANTHROPIC_AUTH_TOKEN": "${localEnv:ANTHROPIC_AUTH_TOKEN}",
     "ANTHROPIC_BASE_URL": "${localEnv:ANTHROPIC_BASE_URL}",
     "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
-    "GOOGLE_GEMINI_BASE_URL": "${localEnv:GOOGLE_GEMINI_BASE_URL}"
+    "GOOGLE_GEMINI_BASE_URL": "${localEnv:GOOGLE_GEMINI_BASE_URL}",
+    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:HOME}/.bun/bin:${containerEnv:HOME}/.bun/bin/bun-node-fallback-bin"
   },
   "containerEnv": {
+    "HOME": "/home/usr_vscode",
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "TZ": "${localEnv:TZ:Asia/Shanghai}"
   },
@@ -140,7 +142,7 @@
   "initializeCommand": "echo '↘️ 准备创建容器...'; docker pull ghcr.io/yanhao98/bun-devcontainers:main;",
   "onCreateCommand": "echo '↘️ 容器首次创建！'; /usr/local/bin/onCreateCommand.sh",
   "updateContentCommand": "echo '↘️ 容器内容已更新！';",
-  "postCreateCommand": "echo '↘️ 容器已创建！'; $HOME/.bun/bin/pnpm install",
+  "postCreateCommand": "echo '↘️ 容器已创建！'; pnpm install",
   "postStartCommand": "echo '↘️ 容器启动了！'",
   "postAttachCommand": "echo '↘️ VS Code 已附加到容器！'; zsh -c 'source ~/.zshrc; echo \"$(date +%Y-%m-%dT%H:%M:%S%z) - Welcome to your Dev Container!\"'",
   "waitFor": "updateContentCommand",
