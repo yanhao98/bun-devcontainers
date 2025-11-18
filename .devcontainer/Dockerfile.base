@@ -38,6 +38,8 @@ USER_SCRIPTS_DIR="/usr/local/etc/onCreateCommand.d"
 
 if [ -d "$USER_SCRIPTS_DIR" ]; then
     if [ -n "$(ls -A "$USER_SCRIPTS_DIR")" ]; then
+        echo "--- 赋予用户自定义脚本可执行权限 ---"
+        chmod +x "$USER_SCRIPTS_DIR"/*
         echo "--- 开始执行用户自定义脚本: $USER_SCRIPTS_DIR ---"
         run-parts --verbose "$USER_SCRIPTS_DIR"
         echo "--- 用户自定义脚本执行完毕 ---"
