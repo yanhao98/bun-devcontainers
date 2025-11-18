@@ -15,7 +15,8 @@
 sudo mkdir -p ~/.bun || true
 sudo chown -R $(whoami):$(whoami) ~/.bun || true
 
-curl -fsSL https://bun.com/install | bash
+curl -fsSL https://bun.com/install | SHELL="$(which zsh)" bash
+
 
 # https://bun.sh/docs/runtime/nodejs-compat
 mkdir -p ~/.bun/bin/bun-node-fallback-bin || true
