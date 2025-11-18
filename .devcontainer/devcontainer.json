@@ -84,15 +84,7 @@
          * 将其设置为 "disabled" 以规避该问题。
          */
         // "debug.javascript.autoAttachFilter": "disabled",
-        "terminal.integrated.defaultProfile.linux": "💲zsh",
-        "terminal.integrated.profiles.linux": {
-          "💲zsh": {
-            "path": "zsh",
-            "icon": "terminal-cmd",
-            "overrideName": true,
-            "color": "terminal.ansiGreen"
-          }
-        }
+        "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
   },
