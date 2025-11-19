@@ -1,0 +1,7 @@
+#!/bin/bash
+# VS Code 附加到容器时的欢迎消息
+
+echo '↘️ VS Code 已附加到容器！'
+
+# 加载 zsh 配置并显示欢迎消息
+zsh -c 'source ~/.zshrc; echo "$(date +%Y-%m-%dT%H:%M:%S%z) - Welcome to your Dev Container!"'

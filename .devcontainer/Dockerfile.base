@@ -7,7 +7,7 @@ ENV VISUAL=nano
 # >>>>> 安装系统依赖
 RUN apt-get update -qq && apt-get install -qq -y --no-install-recommends \
     # 基础工具
-    ca-certificates wget curl \
+    ca-certificates wget curl tree \
     # 开发工具
     less git procps sudo fzf zsh man-db unzip gnupg2 gh \
     # 编辑器和实用工具
@@ -26,31 +26,8 @@ RUN groupadd --gid 1000 usr_vscode \
     && cat /etc/passwd
 
 # >>>>> 复制内置脚本到 /usr/local/bin
-COPY onCreateCommand-internal.d/* /usr/local/bin/
-RUN chmod +x /usr/local/bin/*
-
-# >>>>> 使用 run-parts 创建主 onCreateCommand 脚本运行器
-RUN tee /usr/local/bin/onCreateCommand.sh >/dev/null <<'EOF'
-#!/bin/bash
-set -e
-
-USER_SCRIPTS_DIR="/usr/local/etc/onCreateCommand.d"
-
-if [ -d "$USER_SCRIPTS_DIR" ]; then
-    if [ -n "$(ls -A "$USER_SCRIPTS_DIR")" ]; then
-        echo "--- 赋予用户自定义脚本可执行权限 ---"
-        chmod +x "$USER_SCRIPTS_DIR"/*
-        echo "--- 开始执行用户自定义脚本: $USER_SCRIPTS_DIR ---"
-        run-parts --verbose "$USER_SCRIPTS_DIR"
-        echo "--- 用户自定义脚本执行完毕 ---"
-    else
-        echo "--- 用户自定义脚本目录 $USER_SCRIPTS_DIR 为空，跳过执行 ---"
-    fi
-else
-    echo "--- 用户自定义脚本目录 $USER_SCRIPTS_DIR 不存在，跳过执行 ---"
-fi
-EOF
-RUN chmod +x /usr/local/bin/onCreateCommand.sh
+COPY --chmod=755 _build-context/builtin-scripts/* /usr/local/bin/
+COPY --chmod=755 _build-context/run-lifecycle-scripts.sh /usr/local/bin/
 
 # >>>>> 切换到非 root 用户
 USER usr_vscode

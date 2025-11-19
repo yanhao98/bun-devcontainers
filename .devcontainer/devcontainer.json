@@ -97,16 +97,16 @@
     },
     {
       "type": "bind",
-      "source": "${localWorkspaceFolder}/.devcontainer/onCreateCommand.d",
-      "target": "/usr/local/etc/onCreateCommand.d"
+      "source": "${localWorkspaceFolder}/.devcontainer/lifecycle-scripts.d",
+      "target": "/usr/local/etc/lifecycle-scripts.d"
     }
   ],
-  "initializeCommand": "echo '↘️ 准备创建容器...'; docker pull ghcr.io/yanhao98/h-devcontainer:main;",
-  "onCreateCommand": "echo '↘️ 容器首次创建！'; /usr/local/bin/onCreateCommand.sh",
-  "updateContentCommand": "echo '↘️ 容器内容已更新！'; zsh -c \"if command -v pnpm >/dev/null 2>&1; then time pnpm install; else echo '❌错误: pnpm 未安装'; exit 0; fi\";",
-  "postCreateCommand": "echo '↘️ 容器已创建！';",
-  "postStartCommand": "echo '↘️ 容器启动了！'",
-  "postAttachCommand": "echo '↘️ VS Code 已附加到容器！'; zsh -c 'source ~/.zshrc; echo \"$(date +%Y-%m-%dT%H:%M:%S%z) - Welcome to your Dev Container!\"';",
+  "initializeCommand": "docker pull ghcr.io/yanhao98/h-devcontainer:main;",
+  "onCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh onCreateCommand",
+  "updateContentCommand": "/usr/local/bin/run-lifecycle-scripts.sh updateContentCommand",
+  "postCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh postCreateCommand",
+  "postStartCommand": "/usr/local/bin/run-lifecycle-scripts.sh postStartCommand",
+  "postAttachCommand": "/usr/local/bin/run-lifecycle-scripts.sh postAttachCommand",
   // "waitFor": "", // 用户在UI启动时需要等待的命令，以便在后台继续执行。默认值为"updateContentCommand"。
   "remoteUser": "usr_vscode"
 }

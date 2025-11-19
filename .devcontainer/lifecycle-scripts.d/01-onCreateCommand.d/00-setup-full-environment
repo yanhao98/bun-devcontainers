@@ -16,9 +16,9 @@ echo "--- 正在执行您的自定义示例脚本 ---"
 sudo chown -R $(whoami):$(whoami) node_modules || true
 
 # 调用内置命令 (这些命令在 onCreateCommand-internal.d 目录中的脚本中定义)
-h-setup-locale
-h-setup-zsh
-h-setup-bun
+# h-setup-locale
+# h-setup-zsh
+# h-setup-bun
 
 # 或者安装一个新的系统软件包:
 # apt-get update && apt-get install -y cowsay
