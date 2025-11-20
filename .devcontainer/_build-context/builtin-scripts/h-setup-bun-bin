@@ -1,0 +1,91 @@
+#!/bin/zsh -eu
+# 参考:
+#   https://bun.com/install
+#   https://github.com/oven-sh/bun/blob/277fc558e2039e3ab25ecebecc5a3f04c5c3199a/dockerhub/debian-slim/Dockerfile
+
+# 验证 zip 文件的校验和
+# 返回值: 0 表示验证成功，1 表示验证失败
+verify_checksum() {
+    if ! curl --fail --location --silent "$shasums_uri" | \
+         grep " bun-linux-$build.zip\$" | \
+         (cd "$(dirname "$zip")" && sha256sum -c -) 2>/dev/null; then
+        return 1
+    fi
+    return 0
+}
+
+arch="$(dpkg --print-architecture)"
+case "${arch##*-}" in \
+	amd64) build="x64-baseline";; \
+	arm64) build="aarch64";; \
+	*) echo "错误: 不支持的架构: $arch"; exit 1 ;; \
+esac
+
+sudo mkdir -p /vscode/bun || true
+sudo chown -R $(whoami):$(whoami) /vscode/bun || true
+zip="/vscode/bun/bun-linux-$build.zip"
+
+bun_uri="https://github.com/oven-sh/bun/releases/latest/download/bun-linux-$build.zip"
+shasums_uri="https://github.com/oven-sh/bun/releases/latest/download/SHASUMS256.txt"
+
+# 检查 zip 文件是否已存在并验证校验和
+need_download=true
+if [[ -f "$zip" ]]; then
+    echo "发现已存在的 bun 归档文件，正在验证校验和..."
+
+    if verify_checksum; then
+        echo "校验和验证成功，跳过下载。"
+        need_download=false
+    else
+        echo "校验和不匹配或验证失败，将重新下载。"
+    fi
+fi
+
+# 下载 zip 文件（如果需要）
+if [[ "$need_download" == "true" ]]; then
+    echo "正在为 $(uname -ms) 下载 bun..."
+    curl --fail --location --progress-bar --output "$zip" "$bun_uri" || {
+        echo "从 \"$bun_uri\" 下载 bun 失败"; exit 1;
+    }
+
+    # 验证下载的文件
+    echo "正在验证下载的归档文件..."
+    if ! verify_checksum; then
+        echo "校验和验证失败"; exit 1;
+    fi
+    echo "校验和验证成功。"
+fi
+
+install_dir="$HOME/.bun"
+sudo mkdir -p "$install_dir" || true
+# 有可能这个目录是 volume 挂载过来的，权限会有问题。
+sudo chown -R $(whoami):$(whoami) "$install_dir" || true
+bin_dir=$install_dir/bin
+
+# -o (overwrite): 这个选项告诉 unzip 在解压缩时，如果遇到同名文件，无需询问直接覆盖现有文件。
+# -q (quiet): 这个选项表示以“静默模式”运行。 在执行过程中，unzip 将不会在终端显示任何输出信息，例如正在解压哪些文件等。
+# -d (directory): 这个选项后面会紧跟着一个路径，用于指定将文件解压缩到哪个目标目录。 如果不使用 -d 选项，文件默认会解压到当前所在的目录。
+unzip -oqd "$bin_dir" "$zip" || {
+    echo "解压 bun 失败"; exit 1;
+}
+
+mv "$bin_dir/bun-linux-$build/bun" "$bin_dir/bun" || {
+    echo "移动解压的 bun 到目标位置失败"; exit 1;
+}
+
+rm -r "$bin_dir/bun-linux-$build"
+
+chmod +x "$bin_dir/bun" || {
+    echo "设置 bun 可执行文件权限失败"; exit 1;
+}
+
+# Install completions, but we don't care if it fails
+IS_BUN_AUTO_UPDATE=true SHELL=zsh bun completions &>/dev/null || :
+
+sudo mkdir -p /usr/local/bun-node-fallback-bin
+sudo ln -sf ~/.bun/bin/bun /usr/local/bun-node-fallback-bin/node
+
+set -x
+which -a bun
+which -a bunx
+which -a node

@@ -21,11 +21,11 @@
     }
   },
   "remoteEnv": {
+    // FIXME: 用 --env-file 传递环境变量
     "ANTHROPIC_AUTH_TOKEN": "${localEnv:ANTHROPIC_AUTH_TOKEN}",
     "ANTHROPIC_BASE_URL": "${localEnv:ANTHROPIC_BASE_URL}",
     "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
     "GOOGLE_GEMINI_BASE_URL": "${localEnv:GOOGLE_GEMINI_BASE_URL}",
-    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:HOME}/.bun/bin:${containerEnv:HOME}/.bun/bin/bun-node-fallback-bin"
   },
   "containerEnv": {
     "HOME": "/home/usr_vscode",
@@ -56,23 +56,23 @@
         // * 尽管使用了“/.*/”，但有些还是会失败，因为有几个错误的默认值：
         // * https://github.com/microsoft/vscode/issues/266651#issuecomment-3292581459
         "chat.tools.terminal.ignoreDefaultAutoApproveRules": true,
-        "tasks": {
-          "version": "2.0.0",
-          "tasks": [
-            {
-              "type": "npm",
-              "script": "dev",
-              "label": "🚀 Dev: Run on Folder Open",
-              "runOptions": {
-                "runOn": "folderOpen"
-              },
-              "isBackground": true,
-              "presentation": {
-                "panel": "dedicated"
-              }
-            }
-          ]
-        },
+        // "tasks": {
+        //   "version": "2.0.0",
+        //   "tasks": [
+        //     {
+        //       "type": "npm",
+        //       "script": "dev",
+        //       "label": "🚀 Dev: Run on Folder Open",
+        //       "runOptions": {
+        //         "runOn": "folderOpen"
+        //       },
+        //       "isBackground": true,
+        //       "presentation": {
+        //         "panel": "dedicated"
+        //       }
+        //     }
+        //   ]
+        // },
         "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
