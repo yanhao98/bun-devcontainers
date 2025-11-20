@@ -31,6 +31,7 @@ COPY --chmod=755 _build-context/run-lifecycle-scripts.sh /usr/local/bin/
 
 # >>>>> 切换到非 root 用户
 USER usr_vscode
+ENV HOME=/home/usr_vscode
 
 # >>>>> zsh-in-docker 安装和配置
 # Default powerline10k theme
