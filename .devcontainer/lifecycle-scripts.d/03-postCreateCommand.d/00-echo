@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # 容器创建完成后的消息
 
 echo '↘️ 容器已创建！'

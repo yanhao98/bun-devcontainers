@@ -10,7 +10,6 @@
 # - 脚本会自动被赋予可执行权限，您无需手动设置。
 #
 # 在这里添加您自己的命令：
-echo "--- 正在执行您的自定义示例脚本 ---"
 
 # 修复 node_modules 权限问题:
 sudo chown -R $(whoami):$(whoami) node_modules || true

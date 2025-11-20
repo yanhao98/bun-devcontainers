@@ -101,7 +101,7 @@
       "target": "/usr/local/etc/lifecycle-scripts.d"
     }
   ],
-  "initializeCommand": "docker pull ghcr.io/yanhao98/h-devcontainer:main;",
+  // "initializeCommand": "docker pull ghcr.io/yanhao98/h-devcontainer:main;",
   "onCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh onCreateCommand",
   "updateContentCommand": "/usr/local/bin/run-lifecycle-scripts.sh updateContentCommand",
   "postCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh postCreateCommand",

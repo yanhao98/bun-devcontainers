@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # 容器启动时的消息
 
 echo '↘️ 容器启动了！'
