@@ -12,10 +12,21 @@ verify_checksum() {
     echo "$expected_checksum  $file" | sha256sum -c - > /dev/null 2>&1
 }
 
+is_glibc_compatible() {
+  getconf GNU_LIBC_VERSION >/dev/null 2>&1 || ldd --version >/dev/null 2>&1 || return 1
+}
+
+# 检测平台
+if is_glibc_compatible; then
+  platform="linux"
+else
+  platform="linuxstatic"
+fi
+
 arch="$(dpkg --print-architecture)"
 case "${arch##*-}" in \
-	amd64) build="linux-x64";; \
-	arm64) build="linux-arm64";; \
+	amd64) build="$platform-x64";; \
+	arm64) build="$platform-arm64";; \
 	*) echo "错误: 不支持的架构: $arch"; exit 1 ;; \
 esac
 
