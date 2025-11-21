@@ -52,5 +52,8 @@ COPY --chmod=755 _build-context/run-lifecycle-scripts.sh /usr/local/bin/
 # ENV BUN_INSTALL_BIN="${HOME}/.bun/bin"
 # ENV PATH="${BUN_INSTALL_BIN}:${PATH}"
 # bun install -g pkg 将会安装到 ENV BUN_INSTALL_BIN，如果没有设置 BUN_INSTALL_BIN，则安装到 bun 二进制所在目录（应该？）。
-ENV PATH="${PATH}:${HOME}/.bun/bin"
+ENV PATH="${HOME}/.bun/bin:${PATH}"
 ENV PATH="${PATH}:/usr/local/bun-node-fallback-bin"
+
+ENV PNPM_HOME="${HOME}/.pnpm"
+ENV PATH="${PNPM_HOME}:${PATH}"

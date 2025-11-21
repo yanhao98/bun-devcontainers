@@ -1,4 +1,4 @@
-#!/bin/zsh -eu
+#!/bin/bash -eu
 # 参考:
 #   https://bun.com/install
 #   https://github.com/oven-sh/bun/blob/277fc558e2039e3ab25ecebecc5a3f04c5c3199a/dockerhub/debian-slim/Dockerfile

@@ -6,8 +6,9 @@ echo -e "\033[1;32m↘️  容器首次创建！\033[0m"
 sudo chown -R $(whoami):$(whoami) /workspaces || true
 
 # 调用内置命令 (这些命令在 _build-context/builtin-scripts 目录中的脚本中定义)
-h-setup-bun-bin
-h-setup-dev-tools
+# h-setup-bun-bin
+# h-setup-dev-tools
+h-setup-pnpm-bin
 # h-setup-locale
 # h-setup-zsh
 # h-setup-bun
