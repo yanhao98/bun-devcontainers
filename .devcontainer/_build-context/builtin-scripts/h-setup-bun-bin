@@ -85,7 +85,8 @@ IS_BUN_AUTO_UPDATE=true SHELL=zsh bun completions &>/dev/null || :
 sudo mkdir -p /usr/local/bun-node-fallback-bin
 sudo ln -sf ~/.bun/bin/bun /usr/local/bun-node-fallback-bin/node
 
-set -x
-which -a bun
-which -a bunx
-which -a node
+# 验证安装
+echo "✓ Bun 安装成功："
+echo "  bun: $(command -v bun)"
+echo "  bunx: $(command -v bunx)"
+echo "  node: $(command -v node)"
