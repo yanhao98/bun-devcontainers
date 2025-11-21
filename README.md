@@ -1,14 +1,24 @@
 ## Dev Container 执行顺序总结
 
-1. initializeCommand (本地主机，容器创建前)
-2. 容器创建
-3. onCreateCommand (容器首次创建时执行一次)
-4. updateContentCommand ()
-5. postCreateCommand (每次容器启动时执行)
-6. 容器启动
-7. postStartCommand (容器内，每次启动)
-8. VS Code 附加到容器
-9. postAttachCommand (容器内，每次附加)
+| 序号 | 阶段/命令 | 说明 |
+| :--- | :--- | :--- |
+| 1 | initializeCommand | 本地主机，容器创建前 |
+| 2 | 容器创建 | - |
+| 3 | onCreateCommand | 容器首次创建时执行一次 |
+| 4 | updateContentCommand | - |
+| 5 | postCreateCommand | 每次容器启动时执行 |
+| 6 | 容器启动 | - |
+| 7 | postStartCommand | 容器内，每次启动 |
+| 8 | VS Code 附加到容器 | - |
+| 9 | postAttachCommand | 容器内，每次附加 |
+
+## Docker Mount Consistency 模式对比
+
+| 模式 | 权威方 (Authority) | 性能特点 | 适用场景 | 数据风险 |
+| :--- | :--- | :--- | :--- | :--- |
+| consistent (默认) | 双方实时同步 | I/O 性能最差，开销大 | 对数据一致性要求极高的数据库 | 无 |
+| cached | 主机 (Host) | 读取速度极快，写入较慢 | Web 开发（代码在主机改，容器里运行） | 无 |
+| delegated | 容器 (Container) | 写入速度极快，读取一般 | 构建任务、日志生成、大规模文件处理 | 容器崩溃时，未同步回主机的少量数据可能丢失 |
 
 ## 参考资料
 

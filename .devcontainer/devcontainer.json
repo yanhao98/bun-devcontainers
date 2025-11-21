@@ -78,29 +78,14 @@
     }
   },
   "mounts": [
-    {
-      // 不挂载可能会遇到：`Cannot run macOS (Mach-O) executable in Docker: Exec format error`
-      "type": "volume",
-      "source": "${localWorkspaceFolderBasename}-node_modules",
-      "target": "${containerWorkspaceFolder}/node_modules"
-    },
-    {
-      "type": "volume",
-      "source": "devcontainer-pnpm-store",
-      "target": "/home/usr_vscode/.pnpm-store"
-    },
-    {
-      "type": "volume",
-      "source": "devcontainer-bun-install-cache",
-      "target": "/home/usr_vscode/.bun/install/cache"
-      // rm -rf ~/.bun/install/cache/*
-    },
-    {
-      "type": "bind",
-      "source": "${localWorkspaceFolder}/.devcontainer/lifecycle-scripts.d",
-      "target": "/usr/local/etc/lifecycle-scripts.d"
-    }
+    // 不挂载还可能会遇到：`Cannot run macOS (Mach-O) executable in Docker: Exec format error`
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=devcontainer-pnpm-store,target=/home/usr_vscode/.pnpm-store,type=volume",
+    // rm -rf ~/.bun/install/cache/*
+    "source=devcontainer-bun-install-cache,target=/home/usr_vscode/.bun/install/cache,type=volume",
+    "source=${localWorkspaceFolder}/.devcontainer/lifecycle-scripts.d,target=/usr/local/etc/lifecycle-scripts.d,type=bind,consistency=delegated"
   ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=delegated",
   // "initializeCommand": "docker pull ghcr.io/yanhao98/h-devcontainer:main;",
   "onCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh onCreateCommand",
   "updateContentCommand": "/usr/local/bin/run-lifecycle-scripts.sh updateContentCommand",
