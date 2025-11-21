@@ -1,0 +1,9 @@
+参考 @.devcontainer/_build-context/builtin-scripts/h-setup-bun-bin
+完成: @h-setup-pnpm-bin
+注意:
+pnpm : OWNER="pnpm" REPO="pnpm"
+
+官网脚本： @install-pnpm.sh
+pnpm-linux-arm64
+pnpm-linux-x64
+pnpm 没有提供 shasum 文件。我们可以用 github 的 api得到。

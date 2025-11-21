@@ -1,0 +1,106 @@
+#!/bin/zsh -eu
+# 参考:
+#   @install-pnpm.sh
+
+# 验证文件的校验和
+# 参数:
+#   $1: 文件路径
+#   $2: 期望的 SHA256 校验和
+# 返回值: 0 表示验证成功，1 表示验证失败
+verify_checksum() {
+    local file="$1"
+    local expected="$2"
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+    # 计算文件的 sha256
+    local current
+    current=$(sha256sum "$file" | awk '{print $1}')
+    if [[ "$current" == "$expected" ]]; then
+        return 0
+    fi
+    return 1
+}
+
+OWNER="pnpm"
+REPO="pnpm"
+
+arch="$(dpkg --print-architecture)"
+case "${arch##*-}" in \
+	amd64) build="linux-x64";; \
+	arm64) build="linux-arm64";; \
+	*) echo "错误: 不支持的架构: $arch"; exit 1 ;; \
+esac
+
+binary_name="pnpm-$build"
+
+# 获取最新发布信息
+echo "正在获取 pnpm 最新版本信息..."
+release_info_file=$(mktemp)
+trap 'rm -f "$release_info_file"' EXIT
+
+if ! curl -s "https://api.github.com/repos/$OWNER/$REPO/releases/latest" -o "$release_info_file"; then
+    echo "错误: 获取发布信息失败"
+    exit 1
+fi
+
+# 提取下载链接和校验和
+download_url=$(jq -r --arg name "$binary_name" '.assets[] | select(.name == $name) | .browser_download_url' "$release_info_file")
+digest=$(jq -r --arg name "$binary_name" '.assets[] | select(.name == $name) | .digest' "$release_info_file")
+# digest 格式为 sha256:hash，我们需要去掉前缀
+expected_sha=${digest#*:}
+
+if [[ -z "$download_url" || -z "$expected_sha" || "$expected_sha" == "null" ]]; then
+    echo "错误: 无法获取下载链接或校验和"
+    exit 1
+fi
+
+sudo mkdir -p /vscode/pnpm || true
+sudo chown -R $(whoami):$(whoami) /vscode/pnpm || true
+target_file="/vscode/pnpm/$binary_name"
+
+# 检查文件是否已存在并验证校验和
+need_download=true
+if [[ -f "$target_file" ]]; then
+    echo "发现已存在的 pnpm 文件，正在验证校验和..."
+    if verify_checksum "$target_file" "$expected_sha"; then
+        echo "校验和验证成功，跳过下载。"
+        need_download=false
+    else
+        echo "校验和不匹配或验证失败，将重新下载。"
+    fi
+fi
+
+# 下载文件（如果需要）
+if [[ "$need_download" == "true" ]]; then
+    echo "正在为 $(uname -ms) 下载 pnpm..."
+    curl --fail --location --progress-bar --output "$target_file" "$download_url" || {
+        echo "从 \"$download_url\" 下载 pnpm 失败"; exit 1;
+    }
+
+    # 验证下载的文件
+    echo "正在验证下载的文件..."
+    if ! verify_checksum "$target_file" "$expected_sha"; then
+        echo "校验和验证失败"; exit 1;
+    fi
+    echo "校验和验证成功。"
+fi
+
+# install_dir="$HOME/.pnpm"
+# sudo mkdir -p "$install_dir" || true
+# sudo chown -R $(whoami):$(whoami) "$install_dir" || true
+# bin_dir="$install_dir/bin"
+# mkdir -p "$bin_dir"
+
+# # 复制二进制文件
+# cp "$target_file" "$bin_dir/pnpm" || {
+#     echo "复制 pnpm 到目标位置失败"; exit 1;
+# }
+
+# chmod +x "$bin_dir/pnpm" || {
+#     echo "设置 pnpm 可执行文件权限失败"; exit 1;
+# }
+
+# # 验证安装
+# echo "✓ pnpm 安装成功："
+# echo "  pnpm: $($bin_dir/pnpm --version)"
