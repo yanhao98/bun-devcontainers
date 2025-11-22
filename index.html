@@ -3,29 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bun DevContainer</title>
+  <title>Dev Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --term-green: #33ff00;
+      --term-glow: rgba(51, 255, 0, 0.5);
+      --bg-color: #050505;
+    }
+
     body {
-      font-family: system-ui, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--term-green);
+      font-family: 'VT323', monospace;
+      margin: 0;
+      height: 100vh;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #1a1a1a;
-      color: #f0f0f0;
+      overflow: hidden;
+      text-shadow: 0 0 4px var(--term-glow);
     }
+
+    /* CRT Scanline Effect */
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0,0,0,0.1) 50%,
+        rgba(0,0,0,0.1)
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+      pointer-events: none;
+      z-index: 11;
+    }
+
+    .container {
+      width: 800px;
+      max-width: 90%;
+      padding: 2rem;
+      border: 2px solid var(--term-green);
+      box-shadow: 0 0 15px var(--term-glow), inset 0 0 15px var(--term-glow);
+      position: relative;
+      z-index: 5;
+      background-color: rgba(0, 10, 0, 0.9);
+    }
+
     h1 {
-      color: #a6d8ff;
+      font-size: 4rem;
+      margin: 0 0 1.5rem 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .status-line {
+      border-top: 2px dashed var(--term-green);
+      padding-top: 1rem;
+      margin-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+
+    .blink {
+      animation: blink 1s step-end infinite;
+    }
+
+    .btn {
+      background: transparent;
+      color: var(--term-green);
+      font-family: 'VT323', monospace;
+      font-size: 1.5rem;
+      padding: 0.5rem 2rem;
+      border: 2px solid var(--term-green);
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 0 5px var(--term-glow);
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      background: var(--term-green);
+      color: #000;
+      box-shadow: 0 0 20px var(--term-green);
+      text-shadow: none;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <h1>Welcome to Bun!</h1>
-  <p>Your dev environment is ready.</p>
+  <div class="scanlines"></div>
+  <div class="crt-overlay"></div>
+  
+  <div class="container">
+    <h1>System Ready<span class="blink">_</span></h1>
+    <p>> Initializing development environment...</p>
+    <p>> Loading modules... [OK]</p>
+    <p>> Establishing connection... [OK]</p>
+    <p>> Status: <span style="color: #fff; text-shadow: 0 0 5px #fff;">ONLINE</span></p>
+    
+    <div style="margin-top: 2rem; text-align: center;">
+      <button class="btn" onclick="console.log('EXECUTE')">ENTER SYSTEM</button>
+    </div>
+
+    <div class="status-line">
+      <span>MEM: 640K OK</span>
+      <span>TIME: <span id="clock">00:00:00</span></span>
+    </div>
+  </div>
+
   <script>
-    console.log("Page loaded!");
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    console.log("System booted.");
   </script>
 </body>
 </html>

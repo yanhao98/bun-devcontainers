@@ -1,0 +1,14 @@
+#!/bin/zsh -eu
+# 打印带有颜色的欢迎信息
+echo -e "\033[1;32m↘️  容器首次创建！\033[0m"
+
+# 修复权限问题（比如 node_modules 目录）
+sudo chown -R $(whoami):$(whoami) /workspaces || true
+
+# 调用内置命令 (这些命令在 _build-context/builtin-scripts 目录中的脚本中定义)
+h-setup-locale
+h-setup-zsh
+
+h-setup-bun-bin
+h-setup-ai-tools
+h-setup-pnpm-bin

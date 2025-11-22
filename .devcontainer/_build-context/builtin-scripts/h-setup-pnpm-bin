@@ -1,0 +1,125 @@
+#!/bin/bash -eu
+# 资料:
+#   https://github.com/pnpm/get.pnpm.io/blob/main/install.sh
+#   https://pnpm.io/installation#in-a-docker-container
+#   https://github.dev/pnpm/pnpm/packages/plugin-commands-setup/src/setup.ts
+#   https://pnpm.io/zh/settings#statedir
+#   https://pnpm.io/zh/completion
+
+cd ~
+
+# 验证文件的校验和
+# 返回值: 0 表示验证成功，1 表示验证失败
+verify_checksum() {
+    local file_path="$1"
+    local expected_checksum="$2"
+
+    if [[ -z "$expected_checksum" ]]; then
+        echo "警告: 未提供期望的校验和。"
+        return 1
+    fi
+
+    local actual_checksum=$(sha256sum "$file_path" | awk '{print $1}')
+
+    if [[ "$actual_checksum" == "$expected_checksum" ]]; then
+        return 0
+    else
+        echo "校验和不匹配。"
+        echo "  期望值: $expected_checksum"
+        echo "  实际值: $actual_checksum"
+        return 1
+    fi
+}
+
+
+arch="$(dpkg --print-architecture)"
+case "${arch##*-}" in \
+	amd64) build="x64";; \
+	arm64) build="arm64";; \
+	*) echo "错误: 不支持的架构: $arch"; exit 1 ;; \
+esac
+
+asset_name="pnpm-linux-${build}"
+
+# /vscode 是一个持久化的目录
+sudo mkdir -p /vscode/pnpm || true
+sudo chown -R $(whoami):$(whoami) /vscode/pnpm || true
+
+# 获取 github release aip
+# 如果 PNPM_VERSION=latest 或者为空，那么就走 latest
+if [[ -z "${PNPM_VERSION:-}" || "${PNPM_VERSION:-}" == "latest" ]]; then
+    release_api_uri="https://api.github.com/repos/pnpm/pnpm/releases/latest"
+else
+    release_api_uri="https://api.github.com/repos/pnpm/pnpm/releases/tags/v${PNPM_VERSION}"
+fi
+
+echo "正在获取 pnpm 版本信息..."
+release_info=$(curl --fail --location --silent "$release_api_uri")
+version=$(echo "$release_info" | jq -r ".tag_name")
+pnpm_uri=$(echo "$release_info" | jq -r ".assets[] | select(.name == \"$asset_name\") | .browser_download_url")
+expected_checksum=$(echo "$release_info" | jq -r ".assets[] | select(.name == \"$asset_name\") | .digest" | cut -d: -f2)
+
+if [[ -z "$version" || -z "$pnpm_uri" || -z "$expected_checksum" ]]; then
+    echo "错误: 无法从 GitHub API 获取 pnpm 的发布信息。"
+    echo "API URI: $release_api_uri"
+    exit 1
+fi
+
+# 在缓存路径中加入版本号
+cached_pnpm_path="/vscode/pnpm/${asset_name}-${version}"
+
+# 检查 zip 文件是否已存在并验证校验和
+need_download=true
+if [[ -f "$cached_pnpm_path" ]]; then
+    echo "发现已存在的 pnpm 文件 ($cached_pnpm_path)，正在验证校验和..."
+
+    if verify_checksum "$cached_pnpm_path" "$expected_checksum"; then
+        echo "校验和验证成功，跳过下载。"
+        need_download=false
+    else
+        echo "校验和不匹配或验证失败，将重新下载。"
+    fi
+fi
+
+# 下载 zip 文件（如果需要）
+if [[ "$need_download" == "true" ]]; then
+    echo "正在为 $(uname -ms) 下载 pnpm ${version}..."
+    echo "下载链接: ${pnpm_uri}"
+
+    curl --fail --location --progress-bar --output "$cached_pnpm_path" "$pnpm_uri" || {
+        echo "从 \"$pnpm_uri\" 下载 pnpm 失败"; exit 1;
+    }
+
+    # 验证下载的文件
+    echo "正在验证下载的归档文件..."
+    if ! verify_checksum "$cached_pnpm_path" "$expected_checksum"; then
+        echo "校验和验证失败"; exit 1;
+    fi
+    echo "校验和验证成功。"
+fi
+
+# install to PNPM_HOME, defaulting to ~/.pnpm
+PNPM_HOME="${PNPM_HOME:-$HOME/.pnpm}"
+tmp_dir="$(mktemp -d)" || { echo "创建临时目录失败"; exit 1; }
+trap "rm -rf '$tmp_dir'" EXIT INT TERM HUP
+
+cp "$cached_pnpm_path" "$tmp_dir/pnpm"
+chmod +x "$tmp_dir/pnpm"
+
+ENV="$HOME/.zshrc" SHELL="$(which zsh)" "$tmp_dir/pnpm" setup || { echo "pnpm setup 失败"; exit 1; }
+
+cmd_pnpm="$PNPM_HOME/pnpm"
+$cmd_pnpm config set store-dir /vscode/pnpm/pnpm-store || { echo "pnpm config set store-dir 失败"; exit 1; }
+$cmd_pnpm env use lts --global || { echo "pnpm env use lts --global 失败"; exit 1; }
+
+$cmd_pnpm completion zsh > ~/completion-for-pnpm.zsh
+# 检查 ~/.zshrc 中是否已经存在 pnpm 自动补全配置
+if ! grep -q 'source ~/completion-for-pnpm.zsh' ~/.zshrc; then
+    echo 'source ~/completion-for-pnpm.zsh' >> ~/.zshrc
+    echo "已添加 pnpm 自动补全到 ~/.zshrc"
+else
+    echo "pnpm 自动补全已存在于 ~/.zshrc 中"
+fi
+
+# 验证安装
+echo "✓ pnpm 安装成功：$($cmd_pnpm --version) ($PNPM_HOME/pnpm)"

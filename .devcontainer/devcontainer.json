@@ -21,11 +21,11 @@
     }
   },
   "remoteEnv": {
+    // FIXME: 用 --env-file 传递环境变量
     "ANTHROPIC_AUTH_TOKEN": "${localEnv:ANTHROPIC_AUTH_TOKEN}",
     "ANTHROPIC_BASE_URL": "${localEnv:ANTHROPIC_BASE_URL}",
     "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
     "GOOGLE_GEMINI_BASE_URL": "${localEnv:GOOGLE_GEMINI_BASE_URL}",
-    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:HOME}/.bun/bin:${containerEnv:HOME}/.bun/bin/bun-node-fallback-bin"
   },
   "containerEnv": {
     "HOME": "/home/usr_vscode",
@@ -56,57 +56,22 @@
         // * 尽管使用了“/.*/”，但有些还是会失败，因为有几个错误的默认值：
         // * https://github.com/microsoft/vscode/issues/266651#issuecomment-3292581459
         "chat.tools.terminal.ignoreDefaultAutoApproveRules": true,
-        "tasks": {
-          "version": "2.0.0",
-          "tasks": [
-            {
-              "type": "npm",
-              "script": "dev",
-              "label": "🚀 Dev: Run on Folder Open",
-              "runOptions": {
-                "runOn": "folderOpen"
-              },
-              "isBackground": true,
-              "presentation": {
-                "panel": "dedicated"
-              }
-            }
-          ]
-        },
         "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
   },
   "mounts": [
-    {
-      // 不挂载可能会遇到：`Cannot run macOS (Mach-O) executable in Docker: Exec format error`
-      "type": "volume",
-      "source": "${localWorkspaceFolderBasename}-node_modules",
-      "target": "${containerWorkspaceFolder}/node_modules"
-    },
-    {
-      "type": "volume",
-      "source": "devcontainer-pnpm-store",
-      "target": "/home/usr_vscode/.pnpm-store"
-    },
-    {
-      "type": "volume",
-      "source": "devcontainer-bun-install-cache",
-      "target": "/home/usr_vscode/.bun/install/cache"
-      // rm -rf ~/.bun/install/cache/*
-    },
-    {
-      "type": "bind",
-      "source": "${localWorkspaceFolder}/.devcontainer/onCreateCommand.d",
-      "target": "/usr/local/etc/onCreateCommand.d"
-    }
+    // 不挂载还可能会遇到：`Cannot run macOS (Mach-O) executable in Docker: Exec format error`
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=${localWorkspaceFolder}/.devcontainer/lifecycle-scripts.d,target=/usr/local/etc/lifecycle-scripts.d,type=bind,consistency=delegated"
   ],
-  "initializeCommand": "echo '↘️ 准备创建容器...'; docker pull ghcr.io/yanhao98/h-devcontainer:main;",
-  "onCreateCommand": "echo '↘️ 容器首次创建！'; /usr/local/bin/onCreateCommand.sh",
-  "updateContentCommand": "echo '↘️ 容器内容已更新！'; zsh -c \"if command -v pnpm >/dev/null 2>&1; then time pnpm install; else echo '❌错误: pnpm 未安装'; exit 0; fi\";",
-  "postCreateCommand": "echo '↘️ 容器已创建！';",
-  "postStartCommand": "echo '↘️ 容器启动了！'",
-  "postAttachCommand": "echo '↘️ VS Code 已附加到容器！'; zsh -c 'source ~/.zshrc; echo \"$(date +%Y-%m-%dT%H:%M:%S%z) - Welcome to your Dev Container!\"';",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=delegated",
+  // "initializeCommand": "docker pull ghcr.io/yanhao98/h-devcontainer:main;",
+  "onCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh onCreateCommand",
+  "updateContentCommand": "/usr/local/bin/run-lifecycle-scripts.sh updateContentCommand",
+  "postCreateCommand": "/usr/local/bin/run-lifecycle-scripts.sh postCreateCommand",
+  "postStartCommand": "/usr/local/bin/run-lifecycle-scripts.sh postStartCommand",
+  "postAttachCommand": "/usr/local/bin/run-lifecycle-scripts.sh postAttachCommand",
   // "waitFor": "", // 用户在UI启动时需要等待的命令，以便在后台继续执行。默认值为"updateContentCommand"。
   "remoteUser": "usr_vscode"
 }
